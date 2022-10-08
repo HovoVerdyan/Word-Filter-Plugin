@@ -33,7 +33,9 @@ class WordFilter {
 	{ ?>
 		<div class="wrap">
             <h1>Word Filter</h1>
+            <?php if ( $_POST['justsubmitted'] == "true" ) echo "Thank you!" ?>
             <form method="POST">
+                <input type="hidden" name="justsubmitted" value="true">
                 <label for="plugin_words_to_filter"><p>Enter comma separated words to filter</p></label>
                 <div class="word-filter__flex-container">
                     <textarea name="plugin_words_to_filter" placeholder="bed, pit, slow, fast..."></textarea>
