@@ -14,7 +14,22 @@ class WordFilter {
 	public function __construct()
 	{
 		add_action('admin_menu', array($this, 'ourMenu'));
+        add_action('admin_init', array($this, 'optionPageSettings'))
+        if( get_option('plugin_words_to_filter') ) add_filter('the_content', array($this, 'filterContent'));
 	}
+
+    public function optionPageSettings()
+    {
+
+    }
+
+    public function filterContent($content)
+    {
+     $badWords = explode(',', get_option('plugin_words_to_filter'));
+     $badWordsTrimmed = array_map('trim', $badWords);
+     return str_ireplace($badWordsTrimmed, 'ssssss', $content);
+    }
+
 
 	public function ourMenu()
 	{
@@ -39,9 +54,7 @@ class WordFilter {
                 <?php  wp_nonce_field('saveFilterWord', 'saveFilter') ?>
                 <label for="plugin_words_to_filter"><p>Enter comma separated words to filter</p></label>
                 <div class="word-filter__flex-container">
-                    <textarea name="plugin_words_to_filter" placeholder="bed, pit, slow, fast...">
-                        <?php echo trim(esc_textarea(get_option('plugin_words_to_filter'))) ?>
-                    </textarea>
+                    <textarea name="plugin_words_to_filter" placeholder="bed, pit, slow, fast..."><?php echo trim(esc_textarea(get_option('plugin_words_to_filter'))) ?></textarea>
                 </div>
                 <input type="submit" name="submit" id="submit" class="button button-primary" value="Save Changes">
             </form>
@@ -51,7 +64,7 @@ class WordFilter {
 
     public function handleForm()
     {
-        if ( wp_verify_nonce($_POST['saveFilter'], 'saveFilter') AND current_user_can('manage_options'))
+        if ( wp_verify_nonce($_POST['saveFilter'], 'saveFilterWord') AND current_user_can('manage_options'))
         {
 	        update_option( 'plugin_words_to_filter', htmlspecialchars(strip_tags($_POST['plugin_words_to_filter'] ))); ?>
             <div class="updated">Your filter words were saved</div>
@@ -63,8 +76,15 @@ class WordFilter {
 
     public function wordFilterOptions()
 	{ ?>
-		Hello World Second TIme!
-
+		<div class="wrap">
+            <div>Word Filter Options</div>
+            <form action="options.php" method="POST">
+                <h1>Word Filter Options</h1>
+                <?php
+                submit_button();
+                ?>
+            </form>
+        </div>
 	<?php }
 
 }
