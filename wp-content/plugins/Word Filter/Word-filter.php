@@ -33,18 +33,33 @@ class WordFilter {
 	{ ?>
 		<div class="wrap">
             <h1>Word Filter</h1>
-            <?php if ( $_POST['justsubmitted'] == "true" ) echo "Thank you!" ?>
+            <?php if ( $_POST['justsubmitted'] == "true" ) $this->handleForm() ?>
             <form method="POST">
                 <input type="hidden" name="justsubmitted" value="true">
+                <?php  wp_nonce_field('saveFilterWord', 'saveFilter') ?>
                 <label for="plugin_words_to_filter"><p>Enter comma separated words to filter</p></label>
                 <div class="word-filter__flex-container">
-                    <textarea name="plugin_words_to_filter" placeholder="bed, pit, slow, fast..."></textarea>
+                    <textarea name="plugin_words_to_filter" placeholder="bed, pit, slow, fast...">
+                        <?php echo trim(esc_textarea(get_option('plugin_words_to_filter'))) ?>
+                    </textarea>
                 </div>
                 <input type="submit" name="submit" id="submit" class="button button-primary" value="Save Changes">
             </form>
         </div>
 
 	<?php }
+
+    public function handleForm()
+    {
+        if ( wp_verify_nonce($_POST['saveFilter'], 'saveFilter') AND current_user_can('manage_options'))
+        {
+	        update_option( 'plugin_words_to_filter', htmlspecialchars(strip_tags($_POST['plugin_words_to_filter'] ))); ?>
+            <div class="updated">Your filter words were saved</div>
+        <?php } else
+        { ?>
+            <div class="error">You don't have permmissiona to perform that action</div>
+        <?php }
+    }
 
     public function wordFilterOptions()
 	{ ?>
