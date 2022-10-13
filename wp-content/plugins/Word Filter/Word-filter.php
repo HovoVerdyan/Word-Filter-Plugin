@@ -14,20 +14,28 @@ class WordFilter {
 	public function __construct()
 	{
 		add_action('admin_menu', array($this, 'ourMenu'));
-        add_action('admin_init', array($this, 'optionPageSettings'))
+        add_action('admin_init', array($this, 'optionPageSettings'));
         if( get_option('plugin_words_to_filter') ) add_filter('the_content', array($this, 'filterContent'));
 	}
 
     public function optionPageSettings()
     {
-
+      add_settings_section('replacement-text_section', null, null, 'word-filter-options');
+      register_setting('replacement_fields', 'replacementText');
+      add_settings_field('replacement-texts', 'Filtered text', array($this, 'replacementFieldHtml'), 'word-filter-options', 'replacement-text_section');
     }
+    
+    public function replacementFieldHtml()
+    { ?>
+        <input type="text" name="replacementText" value="<?php echo esc_attr(get_option('replacementText', '***')) ?>">
+        <p>Leave blank to simply remove filtered words</p>
+    <?php }
 
     public function filterContent($content)
     {
      $badWords = explode(',', get_option('plugin_words_to_filter'));
      $badWordsTrimmed = array_map('trim', $badWords);
-     return str_ireplace($badWordsTrimmed, 'ssssss', $content);
+     return str_ireplace($badWordsTrimmed, esc_html(get_option('replacementText')), $content);
     }
 
 
@@ -77,10 +85,12 @@ class WordFilter {
     public function wordFilterOptions()
 	{ ?>
 		<div class="wrap">
-            <div>Word Filter Options</div>
             <form action="options.php" method="POST">
                 <h1>Word Filter Options</h1>
                 <?php
+                settings_errors();
+                settings_fields('replacement_fields');
+                do_settings_sections('word-filter-options');
                 submit_button();
                 ?>
             </form>
